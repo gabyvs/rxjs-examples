@@ -1,26 +1,20 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { css }           from 'emotion';
+import React             from 'react';
+import { SuggestionBox } from './SuggestionBox';
 
-const App: React.FC = () => {
+const style = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #73bbd9;
+  width: 100%;
+  height: 100vh;       
+`;
+
+export const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={style}>
+      <SuggestionBox />
     </div>
   );
 }
-
-export default App;
