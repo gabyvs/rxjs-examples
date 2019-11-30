@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { fromFetch }                  from 'rxjs/fetch';
 import { of }                         from 'rxjs';
-import { switchMap, catchError }      from 'rxjs/operators';
+import {
+  flatMap,
+  switchMap,
+  catchError }                        from 'rxjs/operators';
 import { Suggestion }                 from './Suggestion';
 import styles                         from './SuggestionBox.module.css';
 
@@ -14,26 +17,29 @@ export const SuggestionBox: React.FunctionComponent = () => {
 
 
   useEffect(() => {
-    console.log('useEffect');
-    const subscription = requestStream.subscribe((requestUrl) => {
-      const responseStream = fromFetch(requestUrl).pipe(
-        switchMap(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            return of({ error: true, message: `Error ${response.status}` });
-          }
-        }),
-        catchError(err => {
-          // Network or other error, handle appropriately
-          console.error(err);
-          return of({ error: true, message: err.message })
+    console.log('in useEffect');
+
+    const responseStream = requestStream
+      .pipe(
+        flatMap((requestUrl: string) => {
+          return fromFetch(requestUrl).pipe(
+            switchMap(response => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                return of({ error: true, message: `Error ${response.status}` });
+              }
+            }),
+            catchError(err => {
+              console.error(err);
+              return of({ error: true, message: err.message })
+            })
+          );
         })
       );
 
-      responseStream.subscribe((response) => {
-        console.log(response);
-      });
+    const subscription = responseStream.subscribe((response) => {
+      console.log(response);
     });
 
     return subscription.unsubscribe;
