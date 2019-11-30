@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { fromFetch }                  from 'rxjs/fetch';
-import { of, merge, Subject }                from 'rxjs';
+import { of, Subject }                from 'rxjs';
 import {
   flatMap,
   map,
+  startWith,
   switchMap,
   catchError }                        from 'rxjs/operators';
 import { Suggestion }                 from './Suggestion';
@@ -15,22 +16,17 @@ export const SuggestionBox: React.FunctionComponent = () => {
   console.log('rendering suggestionBox');
   const [suggestions, setSuggestions] = useState([]);
 
-
-
   useEffect(() => {
     console.log('in useEffect');
 
-    const requestOnRefreshStream = refreshStream
+    const requestStream = refreshStream
       .pipe(
+        startWith('startup click'),
         map(_ => {
           const randomOffset = Math.floor(Math.random() * 500);
           return `https://api.github.com/users?since=${randomOffset}`;
-        })
+        }),
       );
-
-    const startupRequestStream = of('https://api.github.com/users');
-
-    const requestStream = merge(requestOnRefreshStream, startupRequestStream);
 
     const responseStream = requestStream
       .pipe(
