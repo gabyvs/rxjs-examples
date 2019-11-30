@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { fromFetch }                  from 'rxjs/fetch';
-import { of }                         from 'rxjs';
+import { of, merge, Subject }                from 'rxjs';
 import {
   flatMap,
+  map,
   switchMap,
   catchError }                        from 'rxjs/operators';
 import { Suggestion }                 from './Suggestion';
 import styles                         from './SuggestionBox.module.css';
 
-const requestStream = of('https://api.github.com/users');
+const refreshStream = new Subject();
 
 export const SuggestionBox: React.FunctionComponent = () => {
   console.log('rendering suggestionBox');
@@ -18,6 +19,18 @@ export const SuggestionBox: React.FunctionComponent = () => {
 
   useEffect(() => {
     console.log('in useEffect');
+
+    const requestOnRefreshStream = refreshStream
+      .pipe(
+        map(_ => {
+          const randomOffset = Math.floor(Math.random() * 500);
+          return `https://api.github.com/users?since=${randomOffset}`;
+        })
+      );
+
+    const startupRequestStream = of('https://api.github.com/users');
+
+    const requestStream = merge(requestOnRefreshStream, startupRequestStream);
 
     const responseStream = requestStream
       .pipe(
@@ -53,7 +66,9 @@ export const SuggestionBox: React.FunctionComponent = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.title}>Who to follow</div>
-        <button className={styles.refresh}>Refresh</button>
+        <button
+          className={styles.refresh}
+          onClick={e => refreshStream.next({ value: '' })}>Refresh</button>
       </div>
       <div className={styles.suggestions}>
         {suggestionElements}
