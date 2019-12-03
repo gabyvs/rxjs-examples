@@ -1,74 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { fromFetch }                  from 'rxjs/fetch';
-import { of, Subject }                from 'rxjs';
-import {
-  flatMap,
-  map,
-  startWith,
-  switchMap,
-  catchError }                        from 'rxjs/operators';
-import { Suggestion }                 from './Suggestion';
-import styles                         from './SuggestionBox.module.css';
+import React                                from 'react';
+import { Subscription }                     from 'rxjs';
+import { Suggestion }                       from './Suggestion';
+import styles                               from './SuggestionBox.module.css';
+import { User }                             from './domain';
+import { refreshStream, suggestionsStream } from './SuggestionService';
 
-const refreshStream = new Subject();
+interface Props {}
 
-export const SuggestionBox: React.FunctionComponent = () => {
-  console.log('rendering suggestionBox');
-  const [suggestions, setSuggestions] = useState([]);
+interface State {
+  suggestions: User[];
+}
 
-  useEffect(() => {
-    console.log('in useEffect');
+export class SuggestionBox extends React.Component<Props, State> {
+  private _subscription: Subscription | undefined;
 
-    const requestStream = refreshStream
-      .pipe(
-        startWith('startup click'),
-        map(_ => {
-          const randomOffset = Math.floor(Math.random() * 500);
-          return `https://api.github.com/users?since=${randomOffset}`;
-        }),
-      );
+  state = {
+    suggestions: []
+  }
 
-    const responseStream = requestStream
-      .pipe(
-        flatMap((requestUrl: string) => {
-          return fromFetch(requestUrl).pipe(
-            switchMap(response => {
-              if (response.ok) {
-                return response.json();
-              } else {
-                return of({ error: true, message: `Error ${response.status}` });
-              }
-            }),
-            catchError(err => {
-              console.error(err);
-              return of({ error: true, message: err.message })
-            })
-          );
-        })
-      );
+  componentDidMount() {
+    this._subscription = suggestionsStream.subscribe((response: any[]) => {
+      const firstThree = response.slice(0,3);
+      this.setState({ suggestions: firstThree });
+    });
+  }
 
-    const subscription = responseStream.subscribe((response) => {
-      console.log(response);
+  componentWillUnmount () {
+    this._subscription && this._subscription.unsubscribe();
+  }
+
+  render () {
+    const suggestionElements = this.state.suggestions.map((user: User) => {
+      return <Suggestion key={user.id} user={user} />
     });
 
-    return subscription.unsubscribe;
-  });
-
-  const suggestionElements = suggestions.map((n) => {
-    return <Suggestion index={n} key={n} />
-  });
-
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.title}>Who to follow</div>
-        <button
-          className={styles.refresh}
-          onClick={e => refreshStream.next({ value: '' })}>Refresh</button>
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div className={styles.title}>Who to follow</div>
+          <button
+            className={styles.refresh}
+            onClick={e => refreshStream.next({ value: '' })}>Refresh</button>
+        </div>
+        <div className={styles.suggestions}>
+          {suggestionElements}
+        </div>
       </div>
-      <div className={styles.suggestions}>
-        {suggestionElements}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}
