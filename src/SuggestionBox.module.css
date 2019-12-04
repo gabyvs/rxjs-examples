@@ -17,6 +17,7 @@
 .title {
   font-weight: bold;
   font-size: 2rem;
+  line-height: 3rem;
 }
 
 .refresh {
@@ -28,6 +29,7 @@
   border: none;
   color: white;
   font-weight: bold;
+  display: none;
 }
 
 .refresh:hover {
@@ -37,4 +39,9 @@
 .suggestions {
   background: white;
   border-radius: 0 0 15px 15px;
+  min-height: 22rem;
+}
+
+.header:hover .refresh {
+  display: block;
 }

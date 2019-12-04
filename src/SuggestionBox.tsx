@@ -18,6 +18,11 @@ export class SuggestionBox extends React.Component<Props, State> {
     suggestions: []
   }
 
+  handleRefresh = () => {
+    this.setState({ suggestions: [] });
+    refreshStream.next({ value: '' });
+  }
+
   componentDidMount() {
     this._subscription = suggestionsStream.subscribe((response: any[]) => {
       const firstThree = response.slice(0,3);
@@ -40,7 +45,7 @@ export class SuggestionBox extends React.Component<Props, State> {
           <div className={styles.title}>Who to follow</div>
           <button
             className={styles.refresh}
-            onClick={e => refreshStream.next({ value: '' })}>Refresh</button>
+            onClick={this.handleRefresh}>Refresh</button>
         </div>
         <div className={styles.suggestions}>
           {suggestionElements}

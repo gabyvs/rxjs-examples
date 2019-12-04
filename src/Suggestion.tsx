@@ -12,12 +12,10 @@ export const Suggestion: React.FC<SuggestionProps> = (props: SuggestionProps) =>
       <div className={styles.picture}>
         <img className={styles.image} alt='suggestion' src={props.user.avatar_url}/>
       </div>
-      <div className={styles.data}>
-        <span className={styles.at}>{props.user.login}</span>
-      </div>
+      <span className={styles.at}>@{props.user.login}</span>
       <div className={styles.links}>
-        <button className={styles.link}>Follow</button>
         <button className={styles.link}>Discard</button>
+        <button className={styles.link}>Follow</button>
       </div>
     </div>
   );
