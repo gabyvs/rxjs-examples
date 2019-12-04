@@ -6,6 +6,7 @@ import {
   startWith,
   switchMap }        from 'rxjs/operators';
 import {
+  merge,
   Observable,
   of,
   Subject }          from 'rxjs/index';
@@ -44,14 +45,18 @@ const suggestionsStream: Observable<Array<User>> = requestStream
     })
   );
 
-function createSuggestionStream (): Observable<User> {
-  return suggestionsStream
+function createSuggestionStream (): Observable<User | null> {
+  const suggestionStream = suggestionsStream
     .pipe(
       map((usersList: User[]) => {
         const randomIndex = Math.floor(Math.random() * usersList.length);
         return usersList[randomIndex];
       })
     );
+  const refresh = refreshStream.pipe(
+    map(_ => null)
+  );
+  return merge(suggestionStream, refresh);
 }
 
 export {

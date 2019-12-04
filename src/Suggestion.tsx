@@ -13,7 +13,7 @@ export class Suggestion extends React.Component<{}, { suggestion: User | null}> 
 
   componentDidMount() {
     this._subscription = createSuggestionStream()
-      .subscribe((user: User) => {
+      .subscribe((user: User | null) => {
         this.setState({ suggestion: user });
       })
   }
