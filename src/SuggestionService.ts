@@ -1,15 +1,22 @@
-import { fromFetch }   from 'rxjs/fetch';
+import { fromFetch } from 'rxjs/fetch';
 import {
   catchError,
   flatMap,
   map,
   startWith,
-  switchMap }          from 'rxjs/operators';
-import { of, Subject } from 'rxjs/index';
+  switchMap }        from 'rxjs/operators';
+import {
+  Observable,
+  of,
+  Subject }          from 'rxjs/index';
+import { User }      from './domain';
 
-const refreshStream = new Subject();
+const refreshStream = new Subject<null>();
+const discard1Stream = new Subject();
+const discard2Stream = new Subject();
+const discard3Stream = new Subject();
 
-const requestStream = refreshStream
+const requestStream: Observable<string> = refreshStream
   .pipe(
     startWith('startup click'),
     map(_ => {
@@ -18,7 +25,7 @@ const requestStream = refreshStream
     }),
   );
 
-const suggestionsStream = requestStream
+const suggestionsStream: Observable<Array<User>> = requestStream
   .pipe(
     flatMap((requestUrl: string) => {
       return fromFetch(requestUrl).pipe(
@@ -37,7 +44,21 @@ const suggestionsStream = requestStream
     })
   );
 
+function createSuggestionStream (): Observable<User> {
+  return suggestionsStream
+    .pipe(
+      map((usersList: User[]) => {
+        const randomIndex = Math.floor(Math.random() * usersList.length);
+        return usersList[randomIndex];
+      })
+    );
+}
+
 export {
   suggestionsStream,
-  refreshStream
+  refreshStream,
+  discard1Stream,
+  discard2Stream,
+  discard3Stream,
+  createSuggestionStream,
 }

@@ -16,6 +16,11 @@
   font-weight: bold;
   cursor: default;
 }
+.empty {
+  width: 13rem;
+  background: lightgray;
+  height: 1.2rem;
+}
 .links {
   display: none;
   margin-left: auto;
