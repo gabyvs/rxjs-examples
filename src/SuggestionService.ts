@@ -6,16 +6,17 @@ import {
   startWith,
   switchMap }        from 'rxjs/operators';
 import {
+  combineLatest,
   merge,
   Observable,
   of,
-  Subject }          from 'rxjs/index';
+  Subject }          from 'rxjs';
 import { User }      from './domain';
 
 const refreshStream = new Subject<null>();
-const discard1Stream = new Subject();
-const discard2Stream = new Subject();
-const discard3Stream = new Subject();
+const discard1Stream = new Subject<null>();
+const discard2Stream = new Subject<null>();
+const discard3Stream = new Subject<null>();
 
 const requestStream: Observable<string> = refreshStream
   .pipe(
@@ -45,25 +46,40 @@ const suggestionsStream: Observable<Array<User>> = requestStream
     })
   );
 
-function createSuggestionStream (): Observable<User | null> {
-  const suggestionStream = suggestionsStream
+function createSuggestionStream (closeStream: Observable<null>): Observable<User | null> {
+  const closeStreamStart = closeStream
     .pipe(
-      map((usersList: User[]) => {
-        const randomIndex = Math.floor(Math.random() * usersList.length);
-        return usersList[randomIndex];
+      startWith(null)
+    );
+  const suggestionStream = combineLatest(closeStreamStart, suggestionsStream)
+    .pipe(
+      map((value: [null, User[]]) => {
+        const randomIndex = Math.floor(Math.random() * value[1].length);
+        return value[1][randomIndex];
       })
     );
   const refresh = refreshStream.pipe(
     map(_ => null)
   );
-  return merge(suggestionStream, refresh);
+  return merge(suggestionStream, refresh)
+    .pipe(
+      startWith(null),
+    );
+}
+
+function getDiscardStream(index: number): Subject<null> {
+  switch(index) {
+    case 1:
+      return discard1Stream;
+    case 2:
+      return discard2Stream;
+    default:
+      return discard3Stream;
+  }
 }
 
 export {
-  suggestionsStream,
   refreshStream,
-  discard1Stream,
-  discard2Stream,
-  discard3Stream,
   createSuggestionStream,
+  getDiscardStream,
 }

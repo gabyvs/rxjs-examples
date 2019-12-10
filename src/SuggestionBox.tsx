@@ -1,9 +1,10 @@
-import React             from 'react';
-import { Suggestion }    from './Suggestion';
-import styles            from './SuggestionBox.module.css';
-import { refreshStream } from './SuggestionService';
+import React                                               from 'react';
+import { Suggestion }                                      from './Suggestion';
+import styles                                              from './SuggestionBox.module.css';
+import { getDiscardStream, refreshStream } from './SuggestionService';
 
 export const SuggestionBox: React.FC = () => {
+  const suggestions = [1,2,3].map(createSuggestion);
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -13,10 +14,12 @@ export const SuggestionBox: React.FC = () => {
           onClick={() => refreshStream.next(null)}>Refresh</button>
       </div>
       <div className={styles.suggestions}>
-        <Suggestion key={1}/>
-        <Suggestion key={2}/>
-        <Suggestion key={3}/>
+        {suggestions}
       </div>
     </div>
   );
+}
+
+function createSuggestion(index: number) {
+  return <Suggestion key={index} discardStream={getDiscardStream(index)}/>
 }

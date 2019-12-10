@@ -41,3 +41,7 @@
 .suggestion:hover .links {
   display: flex;
 }
+
+.link:hover {
+  background: rgba(115,187,217,.8);
+}
